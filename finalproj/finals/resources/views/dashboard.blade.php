@@ -185,4 +185,32 @@
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-3">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">System Logs</h2>
-                <a href
+                <a href="{{ route('logs.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm">Manage →</a>
+            </div>
+            <div class="table-container max-h-64 overflow-y-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse($logs ?? [] as $log)
+                        <tr>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $log->user->full_name ?? 'Unknown' }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $log->action }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{{ $log->date_time->format('M d, Y h:i A') }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="3" class="text-center text-sm italic p-4">No logs found.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+
+    </div>
+@endsection
