@@ -130,7 +130,8 @@
                         @forelse($transactions as $transaction)
                         <tr>
                             <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $transaction->transaction_id }}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $transaction->customer->customer_name ?? 'N/A' }}</td>
+                            {{-- FIX: Accessed customer via the sale relationship --}}
+                            <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $transaction->sale->customer->customer_name ?? 'N/A' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm">{{ $transaction->product->product_name ?? 'N/A' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-sm">
                                 <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-200 text-gray-800">

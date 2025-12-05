@@ -8,50 +8,63 @@ use App\Models\Sale;
 use App\Models\Product;
 use App\Models\Customer;
 use App\Models\Log;
-use App\Models\User; 
+use App\Models\User;
 
 class TransactionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $products = Product::all();
         $customers = Customer::all();
-        $user = User::first(); 
+        $user = User::first();
 
-        if ($products->isEmpty() || $customers->isEmpty() || !$user) {
-            $this->command->info('Cannot run TransactionSeeder, missing products, customers, or users.');
+        // Safety check
+        if ($products->isEmpty() || $customers->isEmpty()) {
+            $this->command->info('Skipping TransactionSeeder: No products or customers found.');
             return;
         }
 
+        // Create 10 different Sales (Receipts)
         for ($i = 0; $i < 10; $i++) {
-            $product = $products->random();
             $customer = $customers->random();
-            $quantity = rand(1, 5);
-
-            $transaction = Transaction::create([
-                'product_id' => $product->product_id,
-                'customer_id' => $customer->customer_id,
-                'quantity_sold' => $quantity,
-                'transaction_date' => now(),
-            ]);
-
+            
+            // 1. Create the Sale (Receipt) first
             $sale = Sale::create([
-                'transaction_id' => $transaction->transaction_id,
-                'total_amount' => $product->price * $quantity,
+                'customer_id' => $customer->customer_id,
+                'total_amount' => 0, // Will calculate below
                 'payment_method' => ['cash', 'credit card'][rand(0, 1)],
                 'sales_date' => now(),
             ]);
 
+            // 2. Add random items to this sale (1 to 3 items per receipt)
+            $totalAmount = 0;
+            $numberOfItems = rand(1, 3);
 
-            Log::create([
-                'user_id' => $user->user_id, 
-                'action' => 'Created sale #' . $sale->sales_id,
-                'date_time' => now()
-            ]);
+            for ($j = 0; $j < $numberOfItems; $j++) {
+                $product = $products->random();
+                $quantity = rand(1, 3);
+
+                Transaction::create([
+                    'sale_id' => $sale->sales_id, // Link to the Sale we just made
+                    'product_id' => $product->product_id,
+                    'quantity_sold' => $quantity,
+                    'price_at_sale' => $product->price,
+                ]);
+
+                $totalAmount += ($product->price * $quantity);
+            }
+
+            // 3. Update the total amount on the receipt
+            $sale->update(['total_amount' => $totalAmount]);
+
+            // 4. Log the action (if a user exists)
+            if ($user) {
+                Log::create([
+                    'user_id' => $user->user_id,
+                    'action' => "Seeder created Sale #{$sale->sales_id} with {$numberOfItems} items",
+                    'date_time' => now()
+                ]);
+            }
         }
     }
 }
-

@@ -8,27 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Sale extends Model
 {
     use HasFactory;
-
+    
     protected $primaryKey = 'sales_id';
+    protected $fillable = ['customer_id', 'total_amount', 'payment_method', 'sales_date'];
 
-    protected $fillable = [
-        'transaction_id',
-        'total_amount',
-        'payment_method',
-        'sales_date',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-        'sales_date' => 'datetime',
-    ];
-
-    public function transaction()
+    // A Sale has many items (transactions)
+    public function transactions()
     {
-        return $this->belongsTo(Transaction::class, 'transaction_id');
+        return $this->hasMany(Transaction::class, 'sale_id', 'sales_id');
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
     }
 }

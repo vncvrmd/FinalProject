@@ -7,7 +7,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Transaction;
 use App\Models\User;
-use App\Models\Log; // Added this import
+use App\Models\Log;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -18,9 +18,13 @@ class DashboardController extends Controller
             'users' => User::latest()->take(5)->get(),
             'products' => Product::all(),
             'customers' => Customer::all(),
-            'transactions' => Transaction::with(['product', 'customer'])->get(),
-            'sales' => Sale::with('transaction')->get(),
-            // Added logs query here
+            
+            // FIX 1: Access customer via the 'sale' relationship
+            'transactions' => Transaction::with(['product', 'sale.customer'])->latest()->take(5)->get(),
+            
+            // FIX 2: Sale now has 'customer' directly. 'transactions' is plural.
+            'sales' => Sale::with(['customer', 'transactions'])->latest()->take(5)->get(),
+            
             'logs' => Log::with('user')->latest()->take(5)->get(),
         ];
         
