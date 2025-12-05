@@ -3,7 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\RoleMiddleware; // Import your new middleware
+use App\Http\Middleware\AdminMiddleware;            // Import the Admin middleware we created
+use App\Http\Middleware\EmployeeAccessMiddleware;   // Import the Employee middleware we created
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,9 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Register the alias here so we can use 'role:admin' in routes
+        // Register aliases so you can use 'admin' or 'employee' as shorthand strings in routes
         $middleware->alias([
-            'role' => RoleMiddleware::class,
+            'admin' => AdminMiddleware::class,
+            'employee' => EmployeeAccessMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

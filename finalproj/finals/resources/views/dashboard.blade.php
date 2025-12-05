@@ -9,6 +9,8 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
+        {{-- USERS: Visible only to Admin --}}
+        @if(Auth::user()->role === 'admin')
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Users</h2>
@@ -44,7 +46,10 @@
                 </table>
             </div>
         </div>
+        @endif
 
+        {{-- PRODUCTS: Visible to Admin and Employee --}}
+        @if(in_array(Auth::user()->role, ['admin', 'employee']))
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Products</h2>
@@ -73,7 +78,10 @@
                 </table>
             </div>
         </div>
+        @endif
 
+        {{-- CUSTOMERS: Visible to Admin and Employee --}}
+        @if(in_array(Auth::user()->role, ['admin', 'employee']))
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Customers</h2>
@@ -100,7 +108,9 @@
                 </table>
             </div>
         </div>
+        @endif
 
+        {{-- TRANSACTIONS: Visible to Everyone --}}
         <div class="card bg-white p-6 rounded-lg shadow-md md:col-span-2 lg:col-span-3"> 
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Transactions</h2>
@@ -136,6 +146,7 @@
             </div>
         </div>
 
+        {{-- SALES: Visible to Everyone --}}
         <div class="card bg-white p-6 rounded-lg shadow-md md:col-span-2 lg:col-span-3"> 
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Sales</h2>
@@ -169,15 +180,9 @@
             </div>
         </div>
 
+        {{-- LOGS: Visible only to Admin --}}
+        @if(Auth::user()->role === 'admin')
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-3">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">System Logs</h2>
-                <a href="{{ route('logs.index') }}" class="text-indigo-600 hover:text-indigo-800 text-sm">View All Logs →</a>
-            </div>
-            <p class="text-sm text-gray-500">
-                Recent system activities and user actions.
-            </p>
-        </div>
-
-    </div> 
-@endsection
+                <a href
