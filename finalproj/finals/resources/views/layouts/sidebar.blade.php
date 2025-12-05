@@ -1,8 +1,10 @@
 @php
-    function is_active($routeName) {
-        return request()->routeIs($routeName) 
-            ? 'bg-blue-900 text-white' 
-            : 'text-gray-400 hover:bg-gray-800 hover:text-white';
+    if (!function_exists('is_active')) {
+        function is_active($routeName) {
+            return request()->routeIs($routeName) 
+                ? 'bg-blue-900 text-white' 
+                : 'text-gray-400 hover:bg-gray-800 hover:text-white';
+        }
     }
 @endphp
 

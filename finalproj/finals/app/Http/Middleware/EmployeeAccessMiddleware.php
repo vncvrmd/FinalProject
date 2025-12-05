@@ -14,8 +14,8 @@ class EmployeeAccessMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Allow if user is Admin OR Employee
-        if (Auth::check() && in_array(Auth::user()->role, ['admin', 'employee'])) {
+        // Allow if user is Admin OR Employee (case-insensitive)
+        if (Auth::check() && in_array(strtolower(Auth::user()->role), ['admin', 'employee'])) {
             return $next($request);
         }
 

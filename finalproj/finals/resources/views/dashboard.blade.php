@@ -10,7 +10,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
         {{-- USERS: Visible only to Admin --}}
-        @if(Auth::user()->role === 'admin')
+        @if(strtolower(Auth::user()->role ?? '') === 'admin')
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Users</h2>
@@ -49,7 +49,7 @@
         @endif
 
         {{-- PRODUCTS: Visible to Admin and Employee --}}
-        @if(in_array(Auth::user()->role, ['admin', 'employee']))
+        @if(in_array(strtolower(Auth::user()->role ?? ''), ['admin', 'employee']))
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Products</h2>
@@ -81,7 +81,7 @@
         @endif
 
         {{-- CUSTOMERS: Visible to Admin and Employee --}}
-        @if(in_array(Auth::user()->role, ['admin', 'employee']))
+        @if(in_array(strtolower(Auth::user()->role ?? ''), ['admin', 'employee']))
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">Customers</h2>
@@ -181,7 +181,7 @@
         </div>
 
         {{-- LOGS: Visible only to Admin --}}
-        @if(Auth::user()->role === 'admin')
+        @if(strtolower(Auth::user()->role ?? '') === 'admin')
         <div class="card bg-white p-6 rounded-lg shadow-md col-span-1 md:col-span-2 lg:col-span-3">
             <div class="flex justify-between items-center mb-3">
                 <h2 class="text-xl font-bold">System Logs</h2>

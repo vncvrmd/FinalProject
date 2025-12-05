@@ -14,8 +14,8 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if user is logged in AND is an admin
-        if (Auth::check() && Auth::user()->role === 'admin') {
+        // Check if user is logged in AND is an admin (case-insensitive)
+        if (Auth::check() && strtolower(Auth::user()->role) === 'admin') {
             return $next($request);
         }
 
