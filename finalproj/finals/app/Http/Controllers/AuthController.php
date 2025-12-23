@@ -20,30 +20,30 @@ class AuthController extends Controller
      * Handle an authentication attempt.
      */
     public function login(Request $request)
-{
+    {
         $credentials = $request->validate([
-        'username' => ['required', 'string'],
-        'password' => ['required', 'string'],
-    ]);
-
-    if (Auth::attempt($credentials)) {
-        $request->session()->regenerate();
-
-        // Get the authenticated user instance directly
-        $user = Auth::user();
-
-        Log::create([
-            'user_id' => $user->id, // Use the ID from the retrieved user object
-            'action' => 'Logged in',
-            'date_time' => now(),
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string'],
         ]);
 
-        return redirect()->intended(route('dashboard'));
-    }
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
 
-    return back()->withErrors([
-        'username' => 'The provided credentials do not match our records.',
-    ])->onlyInput('username');
+            // Get the authenticated user instance directly
+            $user = Auth::user();
+
+            Log::create([
+                'user_id' => $user->user_id, // FIXED: Changed from $user->id to $user->user_id to match your database column
+                'action' => 'Logged in',
+                'date_time' => now(),
+            ]);
+
+            return redirect()->intended(route('dashboard'));
+        }
+
+        return back()->withErrors([
+            'username' => 'The provided credentials do not match our records.',
+        ])->onlyInput('username');
     }
 
     /**
@@ -54,7 +54,7 @@ class AuthController extends Controller
         // Optional: Log the logout action before destroying session
         if (Auth::check()) {
             Log::create([
-                'user_id' => Auth::id(),
+                'user_id' => Auth::user()->user_id, // Updated to use the correct primary key for consistency
                 'action' => 'Logged out',
                 'date_time' => now(),
             ]);
