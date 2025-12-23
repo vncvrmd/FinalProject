@@ -61,10 +61,20 @@
     </a>
     @endif
 
-    {{-- Logout Button (Optional but recommended) --}}
-    <form method="POST" action="{{ route('logout') }}" class="px-4 mt-8">
+    {{-- SEPARATOR --}}
+    <div class="mt-8 border-t border-gray-700 mx-4"></div>
+
+    {{-- PROFILE: Visible to Everyone --}}
+    <a href="{{ route('profile.show') }}" 
+       class="flex items-center px-4 py-2 mt-4 transition-colors duration-200 transform rounded-md {{ is_active('profile.*') }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        <span class="ml-3">My Profile</span>
+    </a>
+
+    {{-- Logout Button --}}
+    <form method="POST" action="{{ route('logout') }}" class="px-4 mt-2 mb-6">
         @csrf
-        <button type="submit" class="flex items-center text-red-400 hover:text-red-200 transition-colors duration-200">
+        <button type="submit" class="flex items-center text-red-400 hover:text-red-200 transition-colors duration-200 w-full text-left">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             <span class="ml-3">Logout</span>
         </button>

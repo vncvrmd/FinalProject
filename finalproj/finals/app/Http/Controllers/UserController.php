@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\File;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage; 
+use Illuminate\Support\Facades\Auth; // Added for clarity
 
 class UserController extends Controller
 {
@@ -21,7 +22,6 @@ class UserController extends Controller
                              ->orWhere('username', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");
             })
-            
             ->latest() 
             ->paginate(10); 
 
@@ -43,8 +43,7 @@ class UserController extends Controller
             'role' => 'required|string|in:admin,employee,customer',
             'profile_image' => [
                 'nullable',
-                File::image()
-                    ->max(1024 * 2) 
+                File::image()->max(1024 * 2) 
             ],
         ]);
 
@@ -64,6 +63,7 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', 'User created successfully!');
     }
+
     public function edit(User $user)
     {
         return view('users.edit', compact('user'));
@@ -77,16 +77,16 @@ class UserController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('users')->ignore($user->user_id, 'user_id') // Ignore this user's own username
+                Rule::unique('users')->ignore($user->user_id, 'user_id') 
             ],
             'email' => [
                 'required',
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('users')->ignore($user->user_id, 'user_id') // Ignore this user's own email
+                Rule::unique('users')->ignore($user->user_id, 'user_id') 
             ],
-            'password' => 'nullable|string|min:8|confirmed', // Make password optional
+            'password' => 'nullable|string|min:8|confirmed', 
             'role' => 'required|string|in:admin,employee,customer',
             'profile_image' => [
                 'nullable',
@@ -95,27 +95,25 @@ class UserController extends Controller
         ]);
 
         if ($request->hasFile('profile_image')) {
-            // Delete old image if it exists
             if ($user->profile_image) {
                 Storage::disk('public')->delete($user->profile_image);
             }
             $validated['profile_image'] = $request->file('profile_image')->store('profile_images', 'public');
         }
 
-        // Handle Password (only update if a new one is provided)
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
-            unset($validated['password']); // Don't update password if field is empty
+            unset($validated['password']); 
         }
 
         $user->update($validated);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
+
     public function destroy(User $user)
     {
-        // Delete profile image from storage
         if ($user->profile_image) {
             Storage::disk('public')->delete($user->profile_image);
         }
@@ -124,5 +122,60 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully!');
     }
-}
 
+    // -- NEW METHODS FOR PROFILE PAGE --
+
+    public function showProfile()
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user(); // Changed to Auth::user() for better IDE support
+        
+        return view('profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'full_name' => 'required|string|max:255',
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users')->ignore($user->user_id, 'user_id')
+            ],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($user->user_id, 'user_id')
+            ],
+            'password' => 'nullable|string|min:8|confirmed',
+            'profile_image' => [
+                'nullable',
+                File::image()->max(1024 * 2)
+            ],
+        ]);
+
+        if ($request->hasFile('profile_image')) {
+            if ($user->profile_image) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+            $validated['profile_image'] = $request->file('profile_image')->store('profile_images', 'public');
+        }
+
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        // Use the model explicitly to ensure update works on the instance found by ID
+        User::find($user->user_id)->update($validated);
+
+        return redirect()->route('profile.show')->with('success', 'Profile updated successfully!');
+    }
+}

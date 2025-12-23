@@ -27,22 +27,23 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard (Shared by all authenticated users)
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+    // -- PROFILE ROUTES --
+    Route::get('/profile', [UserController::class, 'showProfile'])->name('profile.show');
+    Route::put('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
+
     // -- ADMIN ONLY (Users, Logs) --
-    // We use the class name 'AdminMiddleware::class' instead of a closure
     Route::middleware(AdminMiddleware::class)->group(function () {
         Route::resource('users', UserController::class);
         Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
     });
 
     // -- ADMIN & EMPLOYEE (Products, Customers) --
-    // We use the class name 'EmployeeAccessMiddleware::class'
     Route::middleware(EmployeeAccessMiddleware::class)->group(function () {
         Route::resource('products', ProductController::class);
         Route::resource('customers', CustomerController::class);
     });
 
     // -- EVERYONE (Transactions, Sales) --
-    // Cashiers are allowed here by default as they are 'auth' but don't hit the specific middleware above
     Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'show']);
     Route::resource('sales', SaleController::class)->only(['index', 'show']);
 });
