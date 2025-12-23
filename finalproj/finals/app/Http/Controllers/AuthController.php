@@ -20,31 +20,30 @@ class AuthController extends Controller
      * Handle an authentication attempt.
      */
     public function login(Request $request)
-    {
-        // Validate the form data
+{
         $credentials = $request->validate([
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
+        'username' => ['required', 'string'],
+        'password' => ['required', 'string'],
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+
+        // Get the authenticated user instance directly
+        $user = Auth::user();
+
+        Log::create([
+            'user_id' => $user->id, // Use the ID from the retrieved user object
+            'action' => 'Logged in',
+            'date_time' => now(),
         ]);
 
-        // Attempt to log the user in
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+        return redirect()->intended(route('dashboard'));
+    }
 
-            // Log the action if you want to track logins
-            Log::create([
-                'user_id' => Auth::id(),
-                'action' => 'Logged in',
-                'date_time' => now(),
-            ]);
-
-            return redirect()->intended(route('dashboard'));
-        }
-
-        // If auth fails, go back with error
-        return back()->withErrors([
-            'username' => 'The provided credentials do not match our records.',
-        ])->onlyInput('username');
+    return back()->withErrors([
+        'username' => 'The provided credentials do not match our records.',
+    ])->onlyInput('username');
     }
 
     /**
