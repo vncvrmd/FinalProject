@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
         // SHOP/POS ROUTES
         Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
         Route::post('/shop', [ShopController::class, 'store'])->name('shop.store');
+        Route::get('/shop/receipt/{sale}', [ShopController::class, 'receipt'])->name('shop.receipt');
     });
 
     // -- EVERYONE (Transactions, Sales) --

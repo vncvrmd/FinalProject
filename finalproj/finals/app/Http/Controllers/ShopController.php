@@ -24,14 +24,14 @@ class ShopController extends Controller
     {
         $request->validate([
             'customer_name' => 'required|string|max:255',
-            'payment_method' => 'required|string',
+            'payment_method' => 'required|string|in:Cash,Credit Card,Gcash',
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,product_id',
             'products.*.quantity' => 'required|integer|min:1',
         ]);
 
         try {
-            DB::transaction(function () use ($request) {
+            $sale = DB::transaction(function () use ($request) {
                 // 1. Create or find customer by name
                 $customer = Customer::firstOrCreate(
                     ['customer_name' => $request->customer_name],
@@ -74,12 +74,23 @@ class ShopController extends Controller
 
                 // 3. Update the Sale Total
                 $sale->update(['total_amount' => $totalAmount]);
+                
+                return $sale;
             });
 
-            return redirect()->route('sales.index')->with('success', 'Sale completed successfully!');
+            return redirect()->route('shop.receipt', $sale->sales_id)->with('success', 'Sale completed successfully!');
 
         } catch (\Exception $e) {
             return back()->with('error', 'Error processing sale: ' . $e->getMessage());
         }
+    }
+
+    public function receipt($saleId)
+    {
+        // Custom primary key lookup
+        $sale = Sale::where('sales_id', $saleId)->firstOrFail();
+        $sale->load(['customer', 'transactions.product']);
+        
+        return view('shop.receipt', compact('sale'));
     }
 }

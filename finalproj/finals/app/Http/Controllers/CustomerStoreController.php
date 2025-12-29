@@ -30,7 +30,7 @@ class CustomerStoreController extends Controller
     public function checkout(Request $request)
     {
         $request->validate([
-            'payment_method' => 'required|string',
+            'payment_method' => 'required|string|in:Cash,Credit Card,Gcash,PayMaya',
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,product_id',
             'products.*.quantity' => 'required|integer|min:1',
