@@ -35,7 +35,7 @@
                             {{ $product->product_name }}
                         </h3>
                         <div class="flex justify-between items-center mt-1">
-                            <span class="text-primary-600 font-bold">${{ number_format($product->price, 2) }}</span>
+                            <span class="text-primary-600 font-bold">₱{{ number_format($product->price, 2) }}</span>
                             <span class="text-xs text-slate-500">{{ $product->quantity_available }} in stock</span>
                         </div>
                     </div>
@@ -71,18 +71,14 @@
             {{-- Total --}}
             <div class="flex justify-between items-center mb-2">
                 <span class="text-slate-500 dark:text-slate-400">Total Amount</span>
-                <span class="text-2xl font-bold text-slate-900 dark:text-white" id="totalDisplay">$0.00</span>
+                <span class="text-2xl font-bold text-slate-900 dark:text-white" id="totalDisplay">₱0.00</span>
             </div>
 
-            {{-- Customer Select --}}
+            {{-- Customer Name --}}
             <div>
-                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Customer</label>
-                <select name="customer_id" required class="w-full rounded-lg border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-sm py-2">
-                    <option value="" disabled selected>Select Customer</option>
-                    @foreach($customers as $customer)
-                        <option value="{{ $customer->customer_id }}">{{ $customer->customer_name }}</option>
-                    @endforeach
-                </select>
+                <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Customer Name</label>
+                <input type="text" name="customer_name" required placeholder="Enter customer name"
+                       class="w-full px-3 py-2 rounded-lg border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
             </div>
 
             {{-- Payment Method --}}
@@ -156,7 +152,7 @@
             container.appendChild(emptyMsg);
             emptyMsg.style.display = 'block';
             checkoutBtn.disabled = true;
-            totalDisplay.innerText = '$0.00';
+            totalDisplay.innerText = '₱0.00';
             return;
         }
 
@@ -172,7 +168,7 @@
             div.innerHTML = `
                 <div class="flex-1">
                     <h4 class="text-sm font-medium text-slate-900 dark:text-white line-clamp-1">${item.name}</h4>
-                    <div class="text-xs text-slate-500">$${item.price.toFixed(2)} x ${item.quantity}</div>
+                    <div class="text-xs text-slate-500">₱${item.price.toFixed(2)} x ${item.quantity}</div>
                 </div>
                 <div class="flex items-center gap-3">
                     <button type="button" onclick="updateQty(${item.product_id}, -1)" class="w-6 h-6 rounded bg-white border border-slate-200 text-slate-600 hover:border-red-500 hover:text-red-500 flex items-center justify-center">-</button>
@@ -189,7 +185,7 @@
             `;
         });
 
-        totalDisplay.innerText = '$' + total.toFixed(2);
+        totalDisplay.innerText = '₱' + total.toFixed(2);
     }
 
     // Simple Search Filter

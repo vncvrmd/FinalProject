@@ -8,19 +8,31 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ShopController; // Added ShopController
-use App\Http\Controllers\CustomerStoreController; // Customer Portal
+use App\Http\Controllers\ShopController;
+use App\Http\Controllers\CustomerStoreController;
+use App\Http\Controllers\CustomerAuthController;
 use App\Http\Middleware\AdminMiddleware; 
 use App\Http\Middleware\EmployeeAccessMiddleware; 
 use Illuminate\Support\Facades\Route;
 
-// -- GUEST ROUTES (Login) --
+// -- ADMIN/EMPLOYEE GUEST ROUTES (Login) --
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-// -- AUTHENTICATED ROUTES --
+// -- CUSTOMER AUTH ROUTES --
+// POST routes outside middleware to avoid CSRF issues from unified login
+Route::post('/customer/login', [CustomerAuthController::class, 'login'])->name('customer.auth.login.post');
+Route::post('/customer/register', [CustomerAuthController::class, 'register'])->name('customer.auth.register.post');
+
+// GET routes with guest middleware
+Route::prefix('customer')->name('customer.auth.')->middleware('guest:customer')->group(function () {
+    Route::get('/login', fn() => redirect('/login?mode=customer'))->name('login');
+    Route::get('/register', [CustomerAuthController::class, 'showRegisterForm'])->name('register');
+});
+
+// -- ADMIN/EMPLOYEE AUTHENTICATED ROUTES --
 Route::middleware(['auth'])->group(function () {
 
     // Logout
@@ -44,19 +56,20 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('products', ProductController::class);
         Route::resource('customers', CustomerController::class);
         
-        // NEW SHOP ROUTES
+        // SHOP/POS ROUTES
         Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
         Route::post('/shop', [ShopController::class, 'store'])->name('shop.store');
     });
 
     // -- EVERYONE (Transactions, Sales) --
-    Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'show']);
+    Route::resource('transactions', TransactionController::class)->only(['index', 'show']);
     Route::resource('sales', SaleController::class)->only(['index', 'show']);
+});
 
-    // -- CUSTOMER PORTAL (All Authenticated Users) --
-    Route::prefix('customer-portal')->name('customer.')->group(function () {
-        Route::get('/', [CustomerStoreController::class, 'index'])->name('index');
-        Route::post('/checkout', [CustomerStoreController::class, 'checkout'])->name('checkout');
-        Route::get('/receipt/{sale}', [CustomerStoreController::class, 'receipt'])->name('receipt');
-    });
+// -- CUSTOMER PORTAL (Authenticated Customers Only) --
+Route::prefix('customer-portal')->name('customer.')->middleware('auth:customer')->group(function () {
+    Route::get('/', [CustomerStoreController::class, 'index'])->name('index');
+    Route::post('/checkout', [CustomerStoreController::class, 'checkout'])->name('checkout');
+    Route::get('/receipt/{sale}', [CustomerStoreController::class, 'receipt'])->name('receipt');
+    Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 });

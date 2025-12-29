@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }">
+<html lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', loginMode: '{{ request()->query('mode', 'customer') }}' }" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,7 +133,7 @@
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
-                    <p class="text-slate-500 dark:text-slate-400 mt-1">Sign in to continue to your dashboard</p>
+                    <p class="text-slate-500 dark:text-slate-400 mt-1">Sign in to continue</p>
                 </div>
                 <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
                         class="p-2.5 rounded-xl text-slate-500 hover:text-slate-700 bg-white dark:bg-dark-card hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-dark-border transition-all shadow-sm border border-slate-200 dark:border-dark-border">
@@ -145,10 +145,31 @@
                     </svg>
                 </button>
             </div>
+
+            {{-- Login Mode Tabs --}}
+            <div class="flex mb-6 bg-slate-100 dark:bg-dark-card rounded-xl p-1 border border-slate-200 dark:border-dark-border">
+                <button @click="loginMode = 'customer'" 
+                        :class="loginMode === 'customer' ? 'bg-white dark:bg-dark-bg shadow-sm text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'"
+                        class="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                    Customer
+                </button>
+                <button @click="loginMode = 'staff'" 
+                        :class="loginMode === 'staff' ? 'bg-white dark:bg-dark-bg shadow-sm text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'"
+                        class="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm transition-all duration-200 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    Staff / Admin
+                </button>
+            </div>
             
             {{-- Login Card --}}
             <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-dark-border p-8">
                 
+                {{-- Error Messages --}}
                 @if ($errors->any())
                     <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
                         <div class="flex items-center gap-3">
@@ -161,8 +182,86 @@
                         </div>
                     </div>
                 @endif
+
+                @if(session('success'))
+                    <div class="mb-6 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                            <p class="text-sm text-emerald-700 dark:text-emerald-400">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                @endif
                 
-                <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                {{-- Customer Login Form --}}
+                <form x-show="loginMode === 'customer'" method="POST" action="{{ route('customer.auth.login.post') }}" class="space-y-5">
+                    @csrf
+                    
+                    {{-- Email Field --}}
+                    <div class="space-y-2">
+                        <label for="customer_email" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                                </svg>
+                            </div>
+                            <input type="email" id="customer_email" name="email" value="{{ old('email') }}"
+                                   class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white dark:focus:bg-dark-card transition-all"
+                                   placeholder="Enter your email" required>
+                        </div>
+                    </div>
+                    
+                    {{-- Password Field --}}
+                    <div class="space-y-2">
+                        <label for="customer_password" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                            </div>
+                            <input :type="showPassword ? 'text' : 'password'" id="customer_password" name="password"
+                                   class="w-full pl-12 pr-12 py-3.5 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white dark:focus:bg-dark-card transition-all"
+                                   placeholder="Enter your password" required>
+                            <button type="button" @click="showPassword = !showPassword" 
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                                <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                                <svg x-show="showPassword" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Remember Me --}}
+                    <div class="flex items-center">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="remember" class="w-4 h-4 rounded border-slate-300 dark:border-dark-border text-emerald-500 focus:ring-emerald-500">
+                            <span class="ml-2 text-sm text-slate-600 dark:text-slate-400">Remember me</span>
+                        </label>
+                    </div>
+                    
+                    {{-- Submit Button --}}
+                    <button type="submit" 
+                            class="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 transform hover:-translate-y-0.5">
+                        <span class="flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                            </svg>
+                            Sign in to Shop
+                        </span>
+                    </button>
+                </form>
+
+                {{-- Staff/Admin Login Form --}}
+                <form x-show="loginMode === 'staff'" x-cloak method="POST" action="{{ route('login') }}" class="space-y-5">
                     @csrf
                     
                     {{-- Username Field --}}
@@ -176,20 +275,20 @@
                             </div>
                             <input type="text" id="username" name="username" value="{{ old('username') }}"
                                    class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white dark:focus:bg-dark-card transition-all"
-                                   placeholder="Enter your username" required autofocus>
+                                   placeholder="Enter your username" required>
                         </div>
                     </div>
                     
                     {{-- Password Field --}}
                     <div class="space-y-2">
-                        <label for="password" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+                        <label for="staff_password" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                 </svg>
                             </div>
-                            <input :type="showPassword ? 'text' : 'password'" id="password" name="password"
+                            <input :type="showPassword ? 'text' : 'password'" id="staff_password" name="password"
                                    class="w-full pl-12 pr-12 py-3.5 rounded-xl border border-slate-200 dark:border-dark-border bg-slate-50 dark:bg-dark-bg text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 focus:bg-white dark:focus:bg-dark-card transition-all"
                                    placeholder="Enter your password" required>
                             <button type="button" @click="showPassword = !showPassword" 
@@ -212,10 +311,20 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
                             </svg>
-                            Sign in
+                            Sign in to Dashboard
                         </span>
                     </button>
                 </form>
+            </div>
+
+            {{-- Register Link (Customer Only) --}}
+            <div x-show="loginMode === 'customer'" class="mt-6 text-center">
+                <p class="text-slate-600 dark:text-slate-400">
+                    Don't have an account? 
+                    <a href="{{ route('customer.auth.register') }}" class="font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                        Create one
+                    </a>
+                </p>
             </div>
             
             {{-- Footer --}}

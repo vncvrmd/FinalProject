@@ -120,28 +120,14 @@
                         </svg>
                     </button>
 
-                    {{-- Back to Admin Button --}}
-                    <a href="{{ route('dashboard') }}" 
-                       class="hidden sm:flex items-center px-4 py-2 rounded-xl bg-slate-100 dark:bg-dark-hover text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-300 text-sm font-medium">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
-                        Back to Dashboard
-                    </a>
-
-                    {{-- User Menu --}}
+                    @if(Auth::guard('customer')->check())
+                    {{-- Customer User Menu --}}
                     <div x-data="{ open: false }" class="relative">
                         <button @click="open = !open" class="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-dark-hover transition-colors">
-                            @if(Auth::user()->profile_image)
-                                <img class="h-8 w-8 rounded-lg object-cover ring-2 ring-emerald-500/30" 
-                                     src="{{ asset('storage/' . Auth::user()->profile_image) }}" 
-                                     alt="{{ Auth::user()->full_name }}">
-                            @else
-                                <div class="h-8 w-8 rounded-lg ring-2 ring-emerald-500/30 bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
-                                    <span class="text-white font-bold text-xs">{{ strtoupper(substr(Auth::user()->username, 0, 1)) }}</span>
-                                </div>
-                            @endif
-                            <span class="hidden sm:block text-sm font-medium text-slate-700 dark:text-slate-300">{{ Auth::user()->full_name }}</span>
+                            <div class="h-8 w-8 rounded-lg ring-2 ring-emerald-500/30 bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+                                <span class="text-white font-bold text-xs">{{ strtoupper(substr(Auth::guard('customer')->user()->customer_name, 0, 1)) }}</span>
+                            </div>
+                            <span class="hidden sm:block text-sm font-medium text-slate-700 dark:text-slate-300">{{ Auth::guard('customer')->user()->customer_name }}</span>
                             <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
@@ -155,23 +141,30 @@
                              x-transition:leave-start="opacity-100 scale-100"
                              x-transition:leave-end="opacity-0 scale-95"
                              class="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-dark-card shadow-xl ring-1 ring-black/5 dark:ring-white/10 py-1 z-50">
-                            <a href="{{ route('dashboard') }}" class="flex items-center px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-dark-hover">
-                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                                </svg>
-                                Dashboard
-                            </a>
-                            <form method="POST" action="{{ route('logout') }}">
+                            <div class="px-4 py-2 border-b border-slate-100 dark:border-dark-border">
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Logged in as</p>
+                                <p class="text-sm font-medium text-slate-900 dark:text-white truncate">{{ Auth::guard('customer')->user()->email }}</p>
+                            </div>
+                            <form method="POST" action="{{ route('customer.logout') }}">
                                 @csrf
                                 <button type="submit" class="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
                                     <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                                     </svg>
-                                    Sign out
+                                    Sign Out
                                 </button>
                             </form>
                         </div>
                     </div>
+                    @else
+                    {{-- Login/Register Buttons (for non-authenticated pages) --}}
+                    <a href="{{ route('customer.auth.login') }}" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors">
+                        Sign In
+                    </a>
+                    <a href="{{ route('customer.auth.register') }}" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-xl font-medium text-sm hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-lg shadow-emerald-500/20">
+                        Create Account
+                    </a>
+                    @endif
                 </div>
             </div>
         </div>

@@ -1,3 +1,4 @@
+@use('Illuminate\Support\Facades\Auth')
 @extends('layouts.customer')
 
 @section('title', 'Shop')
@@ -78,7 +79,7 @@
                             {{ $product->description ?? 'No description available' }}
                         </p>
                         <div class="flex items-center justify-between">
-                            <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">${{ number_format($product->price, 2) }}</span>
+                            <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">₱{{ number_format($product->price, 2) }}</span>
                         </div>
                     </div>
                 </div>
@@ -132,14 +133,13 @@
                     {{-- Total --}}
                     <div class="flex justify-between items-center mb-5 pb-5 border-b border-slate-200 dark:border-dark-border">
                         <span class="text-slate-600 dark:text-slate-400 font-medium">Total</span>
-                        <span class="text-3xl font-bold text-slate-900 dark:text-white" id="totalDisplay">$0.00</span>
+                        <span class="text-3xl font-bold text-slate-900 dark:text-white" id="totalDisplay">₱0.00</span>
                     </div>
 
-                    {{-- Customer Name --}}
-                    <div class="mb-4">
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Your Name</label>
-                        <input type="text" name="customer_name" required placeholder="Enter your name"
-                               class="w-full px-4 py-3 rounded-xl bg-white dark:bg-dark-bg border border-slate-200 dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
+                    {{-- Logged in Customer Info --}}
+                    <div class="mb-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
+                        <p class="text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Ordering as</p>
+                        <p class="font-semibold text-emerald-700 dark:text-emerald-300">{{ Auth::guard('customer')->user()->customer_name }}</p>
                     </div>
 
                     {{-- Payment Method --}}
@@ -241,7 +241,7 @@
                 </div>
             `;
             checkoutBtn.disabled = true;
-            totalDisplay.innerText = '$0.00';
+            totalDisplay.innerText = '₱0.00';
             cartCount.innerText = '0 items';
             return;
         }
@@ -257,7 +257,7 @@
             div.innerHTML = `
                 <div class="flex-1 min-w-0">
                     <h4 class="text-sm font-semibold text-slate-900 dark:text-white truncate">${item.name}</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">$${item.price.toFixed(2)} × ${item.quantity}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">₱${item.price.toFixed(2)} × ${item.quantity}</p>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" onclick="updateQty(${item.product_id}, -1)" 
@@ -283,7 +283,7 @@
             `;
         });
 
-        totalDisplay.innerText = '$' + total.toFixed(2);
+        totalDisplay.innerText = '₱' + total.toFixed(2);
         cartCount.innerText = totalItems + (totalItems === 1 ? ' item' : ' items');
     }
 

@@ -23,7 +23,7 @@ class ShopController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'customer_id' => 'required|exists:customers,customer_id',
+            'customer_name' => 'required|string|max:255',
             'payment_method' => 'required|string',
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,product_id',
@@ -32,9 +32,15 @@ class ShopController extends Controller
 
         try {
             DB::transaction(function () use ($request) {
-                // 1. Create the Sale Record
+                // 1. Create or find customer by name
+                $customer = Customer::firstOrCreate(
+                    ['customer_name' => $request->customer_name],
+                    ['contact_information' => '', 'address' => '']
+                );
+
+                // 2. Create the Sale Record
                 $sale = Sale::create([
-                    'customer_id' => $request->customer_id,
+                    'customer_id' => $customer->customer_id,
                     'total_amount' => 0, // Will update after calculating
                     'payment_method' => $request->payment_method,
                     'sales_date' => now(),

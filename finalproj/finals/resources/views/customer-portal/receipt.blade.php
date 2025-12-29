@@ -64,11 +64,11 @@
                     <div class="flex-1">
                         <p class="font-medium text-slate-900 dark:text-white">{{ $transaction->product->product_name ?? 'Product' }}</p>
                         <p class="text-sm text-slate-500 dark:text-slate-400">
-                            ${{ number_format($transaction->price_at_sale, 2) }} × {{ $transaction->quantity_sold }}
+                            ₱{{ number_format($transaction->price_at_sale, 2) }} × {{ $transaction->quantity_sold }}
                         </p>
                     </div>
                     <p class="font-semibold text-slate-900 dark:text-white">
-                        ${{ number_format($transaction->price_at_sale * $transaction->quantity_sold, 2) }}
+                        ₱{{ number_format($transaction->price_at_sale * $transaction->quantity_sold, 2) }}
                     </p>
                 </div>
                 @endforeach
@@ -79,7 +79,7 @@
         <div class="p-6 bg-slate-50 dark:bg-slate-800/50">
             <div class="flex justify-between items-center">
                 <span class="text-lg font-semibold text-slate-600 dark:text-slate-400">Total Amount</span>
-                <span class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">${{ number_format($sale->total_amount, 2) }}</span>
+                <span class="text-3xl font-bold text-emerald-600 dark:text-emerald-400">₱{{ number_format($sale->total_amount, 2) }}</span>
             </div>
         </div>
 

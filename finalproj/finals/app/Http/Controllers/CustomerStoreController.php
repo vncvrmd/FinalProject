@@ -9,6 +9,8 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\Auth;
+
 class CustomerStoreController extends Controller
 {
     /**
@@ -28,7 +30,6 @@ class CustomerStoreController extends Controller
     public function checkout(Request $request)
     {
         $request->validate([
-            'customer_name' => 'required|string|max:255',
             'payment_method' => 'required|string',
             'products' => 'required|array|min:1',
             'products.*.id' => 'required|exists:products,product_id',
@@ -37,11 +38,8 @@ class CustomerStoreController extends Controller
 
         try {
             $sale = DB::transaction(function () use ($request) {
-                // Create or find customer by name
-                $customer = Customer::firstOrCreate(
-                    ['customer_name' => $request->customer_name],
-                    ['contact_information' => '', 'address' => '']
-                );
+                // Get the logged-in customer
+                $customer = Auth::guard('customer')->user();
 
                 // Create the Sale Record
                 $sale = Sale::create([
