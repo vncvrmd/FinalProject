@@ -8,6 +8,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ShopController; // Added ShopController
+use App\Http\Controllers\CustomerStoreController; // Customer Portal
 use App\Http\Middleware\AdminMiddleware; 
 use App\Http\Middleware\EmployeeAccessMiddleware; 
 use Illuminate\Support\Facades\Route;
@@ -37,13 +39,24 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
     });
 
-    // -- ADMIN & EMPLOYEE (Products, Customers) --
+    // -- ADMIN & EMPLOYEE (Products, Customers, Shop) --
     Route::middleware(EmployeeAccessMiddleware::class)->group(function () {
         Route::resource('products', ProductController::class);
         Route::resource('customers', CustomerController::class);
+        
+        // NEW SHOP ROUTES
+        Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
+        Route::post('/shop', [ShopController::class, 'store'])->name('shop.store');
     });
 
     // -- EVERYONE (Transactions, Sales) --
     Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store', 'show']);
     Route::resource('sales', SaleController::class)->only(['index', 'show']);
+
+    // -- CUSTOMER PORTAL (All Authenticated Users) --
+    Route::prefix('customer-portal')->name('customer.')->group(function () {
+        Route::get('/', [CustomerStoreController::class, 'index'])->name('index');
+        Route::post('/checkout', [CustomerStoreController::class, 'checkout'])->name('checkout');
+        Route::get('/receipt/{sale}', [CustomerStoreController::class, 'receipt'])->name('receipt');
+    });
 });

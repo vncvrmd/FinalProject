@@ -44,12 +44,29 @@
     </a>
     @endif
 
-    {{-- PRODUCTS & CUSTOMERS: Admin and Employee --}}
+    {{-- PRODUCTS & CUSTOMERS & SHOP: Admin and Employee --}}
     @if(in_array(Auth::user()->role, ['admin', 'employee']))
     
     {{-- Navigation Label --}}
     <p x-show="!sidebarCollapsed" class="px-3 pt-4 text-xs font-semibold text-primary-200/60 uppercase tracking-wider mb-2">Inventory</p>
     
+    {{-- NEW SHOP / POS BUTTON --}}
+    <a href="{{ route('shop.index') }}" 
+       class="nav-item group flex items-center px-3 py-2.5 rounded-xl transition-all duration-300 
+              {{ is_active('shop.*') ? 'bg-white/20 text-white shadow-lg shadow-primary-500/20' : 'text-primary-100 hover:bg-white/10 hover:text-white' }}"
+       :class="{ 'justify-center': sidebarCollapsed }">
+        <div class="flex items-center justify-center w-9 h-9 rounded-lg {{ is_active('shop.*') ? 'bg-white/20' : 'bg-white/5 group-hover:bg-white/10' }} transition-all duration-300">
+            {{-- Shop Icon --}}
+            <svg class="w-5 h-5 {{ is_active('shop.*') ? 'text-white' : 'text-primary-300 group-hover:text-white' }} transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+            </svg>
+        </div>
+        <span x-show="!sidebarCollapsed" x-transition class="ml-3 font-medium">Shop / POS</span>
+        @if(is_active('shop.*'))
+            <span x-show="!sidebarCollapsed" class="ml-auto w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        @endif
+    </a>
+
     <a href="{{ route('products.index') }}" 
        class="nav-item group flex items-center px-3 py-2.5 rounded-xl transition-all duration-300 
               {{ is_active('products.*') ? 'bg-white/20 text-white shadow-lg shadow-primary-500/20' : 'text-primary-100 hover:bg-white/10 hover:text-white' }}"
@@ -82,7 +99,7 @@
     @endif
     
     {{-- TRANSACTIONS & SALES: Visible to Everyone --}}
-    <p x-show="!sidebarCollapsed" class="px-3 pt-4 text-xs font-semibold text-primary-200/60 uppercase tracking-wider mb-2">Sales</p>
+    <p x-show="!sidebarCollapsed" class="px-3 pt-4 text-xs font-semibold text-primary-200/60 uppercase tracking-wider mb-2">Sales History</p>
     
     <a href="{{ route('transactions.index') }}" 
        class="nav-item group flex items-center px-3 py-2.5 rounded-xl transition-all duration-300 
@@ -133,6 +150,25 @@
         @endif
     </a>
     @endif
+
+    {{-- CUSTOMER PORTAL: Visible to Everyone --}}
+    <p x-show="!sidebarCollapsed" class="px-3 pt-4 text-xs font-semibold text-primary-200/60 uppercase tracking-wider mb-2">Customer View</p>
+    
+    <a href="{{ route('customer.index') }}" 
+       class="nav-item group flex items-center px-3 py-2.5 rounded-xl transition-all duration-300 
+              {{ is_active('customer.*') ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/30' : 'bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 text-emerald-300 hover:from-emerald-500/20 hover:to-cyan-500/20 hover:text-white border border-emerald-500/20' }}"
+       :class="{ 'justify-center': sidebarCollapsed }">
+        <div class="flex items-center justify-center w-9 h-9 rounded-lg {{ is_active('customer.*') ? 'bg-white/20' : 'bg-emerald-500/10 group-hover:bg-emerald-500/20' }} transition-all duration-300">
+            {{-- Storefront Icon --}}
+            <svg class="w-5 h-5 {{ is_active('customer.*') ? 'text-white' : 'text-emerald-400 group-hover:text-white' }} transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+        </div>
+        <span x-show="!sidebarCollapsed" x-transition class="ml-3 font-medium">Customer Portal</span>
+        @if(is_active('customer.*'))
+            <span x-show="!sidebarCollapsed" class="ml-auto w-2 h-2 rounded-full bg-white animate-pulse"></span>
+        @endif
+    </a>
 </nav>
 
 {{-- Bottom Section --}}
