@@ -156,7 +156,7 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8|confirmed',
             'profile_image' => [
                 'nullable',
-                File::image()->max(1024 * 2)
+                File::image()->max(1024 * 10) // 10MB max
             ],
         ]);
 
