@@ -66,7 +66,15 @@
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 flex-shrink-0">
                                         @if($product->product_image)
-                                            <img src="{{ asset('storage/' . $product->product_image) }}" class="w-full h-full object-cover" alt="{{ $product->product_name }}">
+                                            <img src="{{ asset('storage/' . $product->product_image) }}" 
+                                                 class="w-full h-full object-cover" 
+                                                 alt="{{ $product->product_name }}"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="w-full h-full items-center justify-center" style="display:none;">
+                                                <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                                </svg>
+                                            </div>
                                         @else
                                             <div class="w-full h-full flex items-center justify-center">
                                                 <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
