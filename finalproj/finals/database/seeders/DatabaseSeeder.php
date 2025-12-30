@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Log; 
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,31 +12,33 @@ class DatabaseSeeder extends Seeder
     {
         // Only seed if no users exist (prevents duplicates on redeploy)
         if (User::count() === 0) {
-            User::factory()->create([
+            // Create admin accounts directly without factories (factories require Faker which is dev-only)
+            User::create([
                 'full_name' => 'Super Admin',
                 'email' => 'admin@example.com',
                 'username' => 'admin',
                 'role' => 'admin',
-                'password' => bcrypt('password'),
+                'password' => Hash::make('password'),
             ]);
 
-            User::factory()->create([
+            User::create([
                 'full_name' => 'Super Admin (Vince)',
                 'username' => 'spvstwu',
                 'email' => 'vincevermudo@gmail.com',
                 'role' => 'admin',
-                'password' => bcrypt('password'),
-            ]);    
-
-            User::factory(10)->create();
-
-            $this->call([
-                ProductSeeder::class,
-                CustomerSeeder::class,
-                TransactionSeeder::class,
+                'password' => Hash::make('password'),
             ]);
-            
-            Log::factory(20)->create();
+
+            // Only run other seeders and factories in non-production
+            if (app()->environment('local', 'testing')) {
+                User::factory(10)->create();
+
+                $this->call([
+                    ProductSeeder::class,
+                    CustomerSeeder::class,
+                    TransactionSeeder::class,
+                ]);
+            }
         }
     }
 }
