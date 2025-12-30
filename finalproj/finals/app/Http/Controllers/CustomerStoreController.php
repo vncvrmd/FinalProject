@@ -97,6 +97,12 @@ class CustomerStoreController extends Controller
         // Manual lookup since Sale uses custom primary key
         $sale = Sale::where('sales_id', $saleId)->firstOrFail();
         
+        // Security: Ensure customer can only view their own receipts
+        $customer = Auth::guard('customer')->user();
+        if ($sale->customer_id !== $customer->customer_id) {
+            abort(403, 'Unauthorized access to this receipt.');
+        }
+        
         // Load sale with customer and transactions
         $sale->load(['customer', 'transactions.product']);
         

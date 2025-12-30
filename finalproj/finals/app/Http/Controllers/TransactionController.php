@@ -48,12 +48,12 @@ class TransactionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'customer_id' => 'required|exists:customers,customer_id',
-            'payment_method' => 'required|string',
-            'products' => 'required|array',
-            'products.*' => 'exists:products,product_id',
-            'quantities' => 'required|array',
-            'quantities.*' => 'integer|min:1',
+            'customer_id' => 'required|integer|exists:customers,customer_id',
+            'payment_method' => 'required|string|in:Cash,Credit Card,Gcash,PayMaya',
+            'products' => 'required|array|min:1',
+            'products.*' => 'integer|exists:products,product_id',
+            'quantities' => 'required|array|min:1',
+            'quantities.*' => 'integer|min:1|max:1000',
         ]);
 
         try {
@@ -96,12 +96,14 @@ class TransactionController extends Controller
             // 3. Update Total
             $sale->update(['total_amount' => $totalAmount]);
 
-            // 4. Log
-            Log::create([
-                'user_id' => Auth::id() ?? 1,
-                'action' => 'Created sale #' . $sale->sales_id,
-                'date_time' => now(),
-            ]);
+            // 4. Log - Only if user is authenticated
+            if (Auth::check()) {
+                Log::create([
+                    'user_id' => Auth::user()->user_id,
+                    'action' => 'Created sale #' . $sale->sales_id,
+                    'date_time' => now(),
+                ]);
+            }
 
             DB::commit();
 

@@ -34,9 +34,9 @@
                         <h3 class="font-medium text-slate-900 dark:text-white truncate" title="{{ $product->product_name }}">
                             {{ $product->product_name }}
                         </h3>
-                        <div class="flex justify-between items-center mt-1">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 mt-1">
                             <span class="text-primary-600 font-bold">₱{{ number_format($product->price, 2) }}</span>
-                            <span class="text-xs text-slate-500">{{ $product->quantity_available }} in stock</span>
+                            <span class="text-xs text-slate-500 whitespace-nowrap">{{ $product->quantity_available }} in stock</span>
                         </div>
                     </div>
                 </div>
@@ -144,12 +144,14 @@
         const totalDisplay = document.getElementById('totalDisplay');
         const checkoutBtn = document.getElementById('checkoutBtn');
 
-        container.innerHTML = '';
+        // Clear only cart items, not the empty message
+        const cartItems = container.querySelectorAll('.cart-item');
+        cartItems.forEach(item => item.remove());
+        
         formInputs.innerHTML = '';
         let total = 0;
 
         if (cart.length === 0) {
-            container.appendChild(emptyMsg);
             emptyMsg.style.display = 'block';
             checkoutBtn.disabled = true;
             totalDisplay.innerText = '₱0.00';
@@ -164,16 +166,16 @@
 
             // Render Visual Item
             const div = document.createElement('div');
-            div.className = 'flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700';
+            div.className = 'cart-item flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700';
             div.innerHTML = `
                 <div class="flex-1">
                     <h4 class="text-sm font-medium text-slate-900 dark:text-white line-clamp-1">${item.name}</h4>
                     <div class="text-xs text-slate-500">₱${item.price.toFixed(2)} x ${item.quantity}</div>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button type="button" onclick="updateQty(${item.product_id}, -1)" class="w-6 h-6 rounded bg-white border border-slate-200 text-slate-600 hover:border-red-500 hover:text-red-500 flex items-center justify-center">-</button>
-                    <span class="text-sm font-semibold w-4 text-center">${item.quantity}</span>
-                    <button type="button" onclick="updateQty(${item.product_id}, 1)" class="w-6 h-6 rounded bg-white border border-slate-200 text-slate-600 hover:border-emerald-500 hover:text-emerald-500 flex items-center justify-center">+</button>
+                    <button type="button" onclick="updateQty(${item.product_id}, -1)" class="w-6 h-6 rounded bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-red-500 hover:text-red-500 flex items-center justify-center transition-colors">-</button>
+                    <span class="text-sm font-semibold w-4 text-center text-slate-900 dark:text-white">${item.quantity}</span>
+                    <button type="button" onclick="updateQty(${item.product_id}, 1)" class="w-6 h-6 rounded bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-emerald-500 hover:text-emerald-500 flex items-center justify-center transition-colors">+</button>
                 </div>
             `;
             container.appendChild(div);

@@ -94,57 +94,40 @@
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .dark ::-webkit-scrollbar-thumb { background: #334155; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Smooth scroll behavior */
+        html { scroll-behavior: smooth; }
         
-        /* Animations */
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-        @keyframes slideInLeft {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+        /* Focus ring styling */
+        *:focus-visible {
+            outline: 2px solid #0891b2;
+            outline-offset: 2px;
         }
         
-        /* Animate cards on page load */
-        .animate-card {
-            animation: scaleIn 0.4s ease-out forwards;
-            opacity: 0;
+        /* Selection styling */
+        ::selection {
+            background-color: rgba(6, 182, 212, 0.2);
         }
-        .animate-card:nth-child(1) { animation-delay: 0.05s; }
-        .animate-card:nth-child(2) { animation-delay: 0.1s; }
-        .animate-card:nth-child(3) { animation-delay: 0.15s; }
-        .animate-card:nth-child(4) { animation-delay: 0.2s; }
         
-        /* Table rows */
-        .table-row-animate { animation: slideUp 0.3s ease-out forwards; opacity: 0; }
-        .table-row-animate:nth-child(1) { animation-delay: 0.02s; }
-        .table-row-animate:nth-child(2) { animation-delay: 0.04s; }
-        .table-row-animate:nth-child(3) { animation-delay: 0.06s; }
-        .table-row-animate:nth-child(4) { animation-delay: 0.08s; }
-        .table-row-animate:nth-child(5) { animation-delay: 0.1s; }
+        /* Skeleton loading animation */
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        .dark .skeleton {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 200% 100%;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
         
         /* Hover lift effect */
-        .hover-lift {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
         .hover-lift:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Chart container animation */
-        .chart-container {
-            animation: fadeIn 0.6s ease-out forwards;
-            animation-delay: 0.3s;
-            opacity: 0;
         }
     </style>
     @stack('styles')
@@ -176,27 +159,47 @@
             class="fixed inset-y-0 left-0 z-30 w-72 gradient-sidebar transform transition-all duration-300 ease-in-out lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen shadow-2xl flex flex-col">
             
             {{-- Logo Section --}}
-            <div class="flex items-center justify-between h-16 px-6 border-b border-cyan-500/20">
-                <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 group" :class="{ 'justify-center w-full': sidebarCollapsed }">
-                    <div class="w-10 h-10 rounded-full overflow-hidden ring-2 ring-cyan-400/40 transform group-hover:scale-110 group-hover:ring-cyan-400/60 transition-all duration-300 shadow-lg shadow-cyan-500/20">
+            <div class="flex items-center h-16 border-b border-cyan-500/20"
+                 :class="sidebarCollapsed ? 'justify-center px-2' : 'justify-between px-6'">
+                <a href="{{ route('dashboard') }}" class="flex items-center group"
+                   :class="sidebarCollapsed ? 'justify-center' : 'space-x-3'">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden ring-2 ring-cyan-400/40 transform group-hover:scale-105 group-hover:ring-cyan-400/60 transition-all duration-300 shadow-lg shadow-cyan-500/20">
                         <img src="{{ asset('images/logo.png') }}" alt="JV TechHub" class="w-full h-full object-cover">
                     </div>
-                    <span x-show="!sidebarCollapsed" x-transition:enter="transition-opacity duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="text-xl font-bold text-white tracking-tight">JV TechHub</span>
+                    <span x-show="!sidebarCollapsed" 
+                          x-transition:enter="transition-all duration-300 ease-out" 
+                          x-transition:enter-start="opacity-0 translate-x-2" 
+                          x-transition:enter-end="opacity-100 translate-x-0"
+                          x-transition:leave="transition-all duration-200 ease-in"
+                          x-transition:leave-start="opacity-100"
+                          x-transition:leave-end="opacity-0"
+                          class="text-xl font-bold text-white tracking-tight whitespace-nowrap">JV TechHub</span>
                 </a>
-                <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:block text-slate-400 hover:text-cyan-400 transition-colors">
-                    <svg x-show="!sidebarCollapsed" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button x-show="!sidebarCollapsed" 
+                        @click="sidebarCollapsed = !sidebarCollapsed" 
+                        class="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-white/5 transition-all duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-                    </svg>
-                    <svg x-show="sidebarCollapsed" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
                     </svg>
                 </button>
             </div>
+            
+            {{-- Expand button when collapsed --}}
+            <button x-show="sidebarCollapsed" 
+                    @click="sidebarCollapsed = false" 
+                    x-transition:enter="transition-opacity duration-200"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    class="hidden lg:flex items-center justify-center w-full py-2 text-slate-400 hover:text-cyan-400 hover:bg-white/5 transition-all duration-200 border-b border-cyan-500/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                </svg>
+            </button>
 
             {{-- User Profile Mini --}}
-            <div class="px-4 py-4 border-b border-white/10" :class="{ 'flex justify-center': sidebarCollapsed }">
-                <div class="flex items-center space-x-3" :class="{ 'justify-center': sidebarCollapsed }">
-                    <div class="relative">
+            <div class="py-4 border-b border-white/10" :class="sidebarCollapsed ? 'px-2' : 'px-4'">
+                <div class="flex items-center" :class="sidebarCollapsed ? 'justify-center' : 'space-x-3'">
+                    <div class="relative flex-shrink-0">
                         @if(Auth::user()->profile_image)
                             <img class="h-10 w-10 rounded-full object-cover ring-2 ring-white/20" 
                                  src="{{ asset('storage/' . Auth::user()->profile_image) }}" 
@@ -238,6 +241,157 @@
                     </div>
                     
                     <div class="flex items-center space-x-3">
+                        {{-- Global Search --}}
+                        <div x-data="globalSearch()" @click.outside="open = false" @keydown.escape.window="open = false" class="relative hidden md:block">
+                            <div class="relative">
+                                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <input x-model="query"
+                                       @input="search()"
+                                       @focus="if(query) open = true"
+                                       type="text" 
+                                       placeholder="Search..." 
+                                       class="w-64 pl-9 pr-3 py-2 rounded-xl bg-gray-100 dark:bg-dark-hover text-slate-900 dark:text-white border-0 focus:outline-none focus:ring-2 focus:ring-primary-500 placeholder-slate-400 text-sm">
+                            </div>
+                            
+                            {{-- Search Dropdown --}}
+                            <div x-show="open && query" 
+                                 x-cloak
+                                 x-transition:enter="transition ease-out duration-100"
+                                 x-transition:enter-start="opacity-0 translate-y-1"
+                                 x-transition:enter-end="opacity-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-75"
+                                 x-transition:leave-start="opacity-100 translate-y-0"
+                                 x-transition:leave-end="opacity-0 translate-y-1"
+                                 class="absolute top-full left-0 mt-2 w-96 bg-white dark:bg-dark-card rounded-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10 z-50 overflow-hidden">
+                                
+                                {{-- Search Results --}}
+                                <div x-show="!loading" class="max-h-96 overflow-y-auto">
+                                    <template x-if="results.products.length > 0">
+                                        <div class="p-2">
+                                            <p class="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Products</p>
+                                            <template x-for="product in results.products" :key="'p'+product.product_id">
+                                                <a :href="'/products/' + product.product_id + '/edit'" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-hover">
+                                                    <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                                        <template x-if="product.product_image">
+                                                            <img :src="'/storage/' + product.product_image" class="w-full h-full object-cover">
+                                                        </template>
+                                                        <template x-if="!product.product_image">
+                                                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                                        </template>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" x-text="product.product_name"></p>
+                                                        <p class="text-xs text-slate-500" x-text="'₱' + parseFloat(product.price).toFixed(2) + ' • ' + product.quantity_available + ' in stock'"></p>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="results.customers.length > 0">
+                                        <div class="p-2 border-t border-slate-100 dark:border-dark-border">
+                                            <p class="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Customers</p>
+                                            <template x-for="customer in results.customers" :key="'c'+customer.customer_id">
+                                                <a :href="'/customers/' + customer.customer_id + '/edit'" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-hover">
+                                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0f2744] to-[#0e7490] flex items-center justify-center flex-shrink-0">
+                                                        <span class="text-white text-xs font-bold" x-text="customer.customer_name.charAt(0).toUpperCase()"></span>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" x-text="customer.customer_name"></p>
+                                                        <p class="text-xs text-slate-500" x-text="customer.email || customer.phone || 'No contact info'"></p>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="results.sales && results.sales.length > 0">
+                                        <div class="p-2 border-t border-slate-100 dark:border-dark-border">
+                                            <p class="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Sales</p>
+                                            <template x-for="sale in results.sales" :key="'s'+sale.sales_id">
+                                                <a :href="'/sales/' + sale.sales_id" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-hover">
+                                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" x-text="'Sale #' + sale.sales_id + (sale.customer ? ' - ' + sale.customer.customer_name : '')"></p>
+                                                        <p class="text-xs text-slate-500" x-text="'₱' + parseFloat(sale.total_amount).toFixed(2) + ' • ' + sale.payment_method"></p>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="results.transactions && results.transactions.length > 0">
+                                        <div class="p-2 border-t border-slate-100 dark:border-dark-border">
+                                            <p class="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Transactions</p>
+                                            <template x-for="trans in results.transactions" :key="'t'+trans.transaction_id">
+                                                <a :href="'/transactions/' + trans.transaction_id" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-hover">
+                                                    <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" x-text="'#' + trans.transaction_id + (trans.product ? ' - ' + trans.product.product_name : '')"></p>
+                                                        <p class="text-xs text-slate-500" x-text="'Qty: ' + trans.quantity_sold + ' • ₱' + parseFloat(trans.price_at_sale).toFixed(2)"></p>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="results.users && results.users.length > 0">
+                                        <div class="p-2 border-t border-slate-100 dark:border-dark-border">
+                                            <p class="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Users</p>
+                                            <template x-for="user in results.users" :key="'u'+user.user_id">
+                                                <a :href="'/users/' + user.user_id + '/edit'" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-hover">
+                                                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#0f2744] to-[#0e7490] flex items-center justify-center flex-shrink-0">
+                                                        <span class="text-white text-xs font-bold" x-text="user.full_name.charAt(0).toUpperCase()"></span>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" x-text="user.full_name"></p>
+                                                        <p class="text-xs text-slate-500" x-text="user.role.charAt(0).toUpperCase() + user.role.slice(1) + ' • ' + user.email"></p>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="results.logs && results.logs.length > 0">
+                                        <div class="p-2 border-t border-slate-100 dark:border-dark-border">
+                                            <p class="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Activity Logs</p>
+                                            <template x-for="log in results.logs" :key="'l'+log.log_id">
+                                                <a href="/logs" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-dark-hover">
+                                                    <div class="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                                                        <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" x-text="log.action"></p>
+                                                        <p class="text-xs text-slate-500" x-text="(log.user ? log.user.full_name : 'Unknown') + ' • ' + new Date(log.date_time).toLocaleString()"></p>
+                                                    </div>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    
+                                    <template x-if="(!results.products || results.products.length === 0) && (!results.customers || results.customers.length === 0) && (!results.users || results.users.length === 0) && (!results.sales || results.sales.length === 0) && (!results.transactions || results.transactions.length === 0) && (!results.logs || results.logs.length === 0)">
+                                        <div class="text-center py-6">
+                                            <p class="text-sm text-slate-500 dark:text-slate-400">No results found</p>
+                                        </div>
+                                    </template>
+                                </div>
+                                
+                                {{-- Loading State --}}
+                                <div x-show="loading" class="p-4 text-center">
+                                    <svg class="animate-spin w-5 h-5 mx-auto text-primary-500" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        
                         {{-- Dark Mode Toggle --}}
                         <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" 
                                 class="relative p-2 rounded-xl bg-gray-100 dark:bg-dark-hover text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 group">
@@ -508,7 +662,178 @@
                 }
             }
         }
+
+        // Global Search Function
+        function globalSearch() {
+            let searchTimeout = null;
+            return {
+                open: false,
+                query: '',
+                loading: false,
+                results: {
+                    products: [],
+                    customers: [],
+                    users: [],
+                    sales: [],
+                    transactions: [],
+                    logs: []
+                },
+                search() {
+                    // Clear previous timeout
+                    if (searchTimeout) clearTimeout(searchTimeout);
+                    
+                    if (!this.query || this.query.length < 1) {
+                        this.open = false;
+                        this.results = { products: [], customers: [], users: [], sales: [], transactions: [], logs: [] };
+                        return;
+                    }
+                    
+                    this.open = true;
+                    this.loading = true;
+                    
+                    // Small debounce for fast typing (100ms)
+                    searchTimeout = setTimeout(async () => {
+                        try {
+                            const response = await fetch(`/api/search?q=${encodeURIComponent(this.query)}`, {
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                }
+                            });
+                            const data = await response.json();
+                            this.results = data;
+                        } catch (error) {
+                            console.error('Search error:', error);
+                        } finally {
+                            this.loading = false;
+                        }
+                    }, 100);
+                }
+            }
+        }
+
+        // Global Confirm Modal
+        window.confirmModal = {
+            show: false,
+            title: '',
+            message: '',
+            confirmText: 'Confirm',
+            confirmClass: 'bg-red-600 hover:bg-red-700',
+            onConfirm: null,
+            formToSubmit: null,
+            
+            open(options) {
+                this.title = options.title || 'Confirm Action';
+                this.message = options.message || 'Are you sure you want to proceed?';
+                this.confirmText = options.confirmText || 'Confirm';
+                this.confirmClass = options.confirmClass || 'bg-red-600 hover:bg-red-700';
+                this.onConfirm = options.onConfirm || null;
+                this.formToSubmit = options.form || null;
+                this.show = true;
+            },
+            
+            confirm() {
+                if (this.formToSubmit) {
+                    this.formToSubmit.submit();
+                } else if (this.onConfirm) {
+                    this.onConfirm();
+                }
+                this.close();
+            },
+            
+            close() {
+                this.show = false;
+                this.onConfirm = null;
+                this.formToSubmit = null;
+            }
+        };
+
+        // Helper function for delete confirmations
+        function confirmDelete(form, itemName = 'this item') {
+            Alpine.store('confirmModal').open({
+                title: 'Delete Confirmation',
+                message: `Are you sure you want to delete ${itemName}? This action cannot be undone.`,
+                confirmText: 'Delete',
+                confirmClass: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+                form: form
+            });
+            return false;
+        }
+
+        // Loading button helper
+        function setButtonLoading(button, loading = true) {
+            if (loading) {
+                button.disabled = true;
+                button.dataset.originalText = button.innerHTML;
+                button.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                `;
+            } else {
+                button.disabled = false;
+                button.innerHTML = button.dataset.originalText;
+            }
+        }
     </script>
+
+    {{-- Global Confirm Modal --}}
+    <div x-data="Alpine.store('confirmModal')" 
+         x-show="show" 
+         x-cloak
+         class="fixed inset-0 z-[100] overflow-y-auto"
+         x-init="Alpine.store('confirmModal', window.confirmModal)">
+        {{-- Backdrop --}}
+        <div x-show="show"
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+             @click="close()"></div>
+        
+        {{-- Modal --}}
+        <div class="flex min-h-full items-center justify-center p-4">
+            <div x-show="show"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 scale-95"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-95"
+                 @click.stop
+                 class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-dark-card shadow-2xl transition-all">
+                
+                {{-- Icon & Title --}}
+                <div class="p-6 text-center">
+                    <div class="mx-auto w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2" x-text="title"></h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400" x-text="message"></p>
+                </div>
+                
+                {{-- Actions --}}
+                <div class="px-6 pb-6 flex gap-3">
+                    <button @click="close()" 
+                            class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors">
+                        Cancel
+                    </button>
+                    <button @click="confirm()" 
+                            :class="confirmClass"
+                            class="flex-1 px-4 py-2.5 rounded-xl text-white font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
+                            x-text="confirmText">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     
     @stack('scripts')
 

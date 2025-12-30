@@ -11,6 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\CustomerStoreController;
 use App\Http\Controllers\CustomerAuthController;
+use App\Http\Controllers\SearchController;
 use App\Http\Middleware\AdminMiddleware; 
 use App\Http\Middleware\EmployeeAccessMiddleware; 
 use Illuminate\Support\Facades\Route;
@@ -22,9 +23,11 @@ Route::middleware('guest')->group(function () {
 });
 
 // -- CUSTOMER AUTH ROUTES --
-// POST routes outside middleware to avoid CSRF issues from unified login
-Route::post('/customer/login', [CustomerAuthController::class, 'login'])->name('customer.auth.login.post');
-Route::post('/customer/register', [CustomerAuthController::class, 'register'])->name('customer.auth.register.post');
+// These POST routes need web middleware for CSRF protection - wrap in middleware group
+Route::middleware(['web'])->group(function () {
+    Route::post('/customer/login', [CustomerAuthController::class, 'login'])->name('customer.auth.login.post');
+    Route::post('/customer/register', [CustomerAuthController::class, 'register'])->name('customer.auth.register.post');
+});
 
 // GET routes with guest middleware
 Route::prefix('customer')->name('customer.auth.')->middleware('guest:customer')->group(function () {
@@ -37,6 +40,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    
+    // Global Search API
+    Route::get('/api/search', [SearchController::class, 'search'])->name('api.search');
     
     // Dashboard (Shared by all authenticated users)
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');

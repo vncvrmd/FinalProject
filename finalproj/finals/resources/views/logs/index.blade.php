@@ -61,16 +61,16 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                @if($log->profile_image)
-                                    <img class="h-10 w-10 rounded-xl object-cover shadow-sm" src="{{ asset('storage/' . $log->profile_image) }}" alt="">
+                                @if($log->user && $log->user->profile_image)
+                                    <img class="h-10 w-10 rounded-xl object-cover shadow-sm" src="{{ asset('storage/' . $log->user->profile_image) }}" alt="">
                                 @else
                                     <div class="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 flex items-center justify-center shadow-sm">
-                                        <span class="text-white font-bold text-sm">{{ strtoupper(substr($log->full_name ?? 'S', 0, 1)) }}</span>
+                                        <span class="text-white font-bold text-sm">{{ strtoupper(substr($log->user->full_name ?? 'S', 0, 1)) }}</span>
                                     </div>
                                 @endif
                                 <div class="ml-4">
                                     <div class="text-sm font-semibold text-gray-900 dark:text-white">
-                                        {{ $log->full_name ?? 'System / Deleted User' }}
+                                        {{ $log->user->full_name ?? 'System / Deleted User' }}
                                     </div>
                                     <div class="text-xs text-gray-500 dark:text-gray-400">
                                         @php
@@ -79,8 +79,9 @@
                                                 'employee' => 'text-blue-500',
                                                 'customer' => 'text-green-500',
                                             ];
+                                            $userRole = $log->user->role ?? null;
                                         @endphp
-                                        <span class="{{ $roleColors[$log->role] ?? 'text-gray-500' }}">{{ ucfirst($log->role ?? '-') }}</span>
+                                        <span class="{{ $roleColors[$userRole] ?? 'text-gray-500' }}">{{ ucfirst($userRole ?? '-') }}</span>
                                     </div>
                                 </div>
                             </div>

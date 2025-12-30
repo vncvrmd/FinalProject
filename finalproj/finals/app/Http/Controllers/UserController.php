@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Log;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\File;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage; 
-use Illuminate\Support\Facades\Auth; // Added for clarity
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -37,14 +39,26 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users',
+            'username' => 'required|string|max:255|unique:users|alpha_dash',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+            ],
             'role' => 'required|string|in:admin,employee,customer',
             'profile_image' => [
                 'nullable',
                 File::image()->max(1024 * 2) 
             ],
+        ], [
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.mixed' => 'Password must contain both uppercase and lowercase letters.',
+            'password.numbers' => 'Password must contain at least one number.',
+            'password.symbols' => 'Password must contain at least one special character.',
         ]);
 
         $imagePath = null;
@@ -52,13 +66,20 @@ class UserController extends Controller
             $imagePath = $request->file('profile_image')->store('profile_images', 'public');
         }
 
-        User::create([
+        $newUser = User::create([
             'full_name' => $validated['full_name'],
             'username' => $validated['username'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
             'role' => $validated['role'],
             'profile_image' => $imagePath,
+        ]);
+
+        // Log user creation
+        Log::create([
+            'user_id' => Auth::id(),
+            'action' => "Created user: {$newUser->username} (Role: {$newUser->role})",
+            'date_time' => now(),
         ]);
 
         return redirect()->route('users.index')->with('success', 'User created successfully!');
@@ -71,12 +92,15 @@ class UserController extends Controller
 
     public function update(Request $request, User $user)
     {
+        $oldRole = $user->role;
+        
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
             'username' => [
                 'required',
                 'string',
                 'max:255',
+                'alpha_dash',
                 Rule::unique('users')->ignore($user->user_id, 'user_id') 
             ],
             'email' => [
@@ -86,12 +110,24 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users')->ignore($user->user_id, 'user_id') 
             ],
-            'password' => 'nullable|string|min:8|confirmed', 
+            'password' => [
+                'nullable',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+            ],
             'role' => 'required|string|in:admin,employee,customer',
             'profile_image' => [
                 'nullable',
                 File::image()->max(1024 * 2)
             ],
+        ], [
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.mixed' => 'Password must contain both uppercase and lowercase letters.',
+            'password.numbers' => 'Password must contain at least one number.',
+            'password.symbols' => 'Password must contain at least one special character.',
         ]);
 
         if ($request->hasFile('profile_image')) {
@@ -109,16 +145,42 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        // Log role changes
+        if ($oldRole !== $user->role) {
+            Log::create([
+                'user_id' => Auth::id(),
+                'action' => "Changed {$user->username} role from {$oldRole} to {$user->role}",
+                'date_time' => now(),
+            ]);
+        }
+
         return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
 
     public function destroy(User $user)
     {
+        // Security: Prevent users from deleting themselves
+        if ($user->user_id === Auth::id()) {
+            return redirect()->route('users.index')
+                ->with('error', 'You cannot delete your own account.');
+        }
+
+        // Store info before deletion for logging
+        $deletedUsername = $user->username;
+        $deletedRole = $user->role;
+
         if ($user->profile_image) {
             Storage::disk('public')->delete($user->profile_image);
         }
 
         $user->delete();
+
+        // Log user deletion
+        Log::create([
+            'user_id' => Auth::id(),
+            'action' => "Deleted user: {$deletedUsername} (Role: {$deletedRole})",
+            'date_time' => now(),
+        ]);
 
         return redirect()->route('users.index')->with('success', 'User deleted successfully!');
     }
@@ -144,6 +206,7 @@ class UserController extends Controller
                 'required',
                 'string',
                 'max:255',
+                'alpha_dash',
                 Rule::unique('users')->ignore($user->user_id, 'user_id')
             ],
             'email' => [
@@ -153,11 +216,23 @@ class UserController extends Controller
                 'max:255',
                 Rule::unique('users')->ignore($user->user_id, 'user_id')
             ],
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => [
+                'nullable',
+                'confirmed',
+                Password::min(8)
+                    ->mixedCase()
+                    ->numbers()
+                    ->symbols(),
+            ],
             'profile_image' => [
                 'nullable',
                 File::image()->max(1024 * 10) // 10MB max
             ],
+        ], [
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.mixed' => 'Password must contain both uppercase and lowercase letters.',
+            'password.numbers' => 'Password must contain at least one number.',
+            'password.symbols' => 'Password must contain at least one special character.',
         ]);
 
         if ($request->hasFile('profile_image')) {
@@ -167,14 +242,27 @@ class UserController extends Controller
             $validated['profile_image'] = $request->file('profile_image')->store('profile_images', 'public');
         }
 
+        $passwordChanged = false;
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
+            $passwordChanged = true;
         } else {
             unset($validated['password']);
         }
 
         // Use the model explicitly to ensure update works on the instance found by ID
         User::find($user->user_id)->update($validated);
+
+        // Security: Regenerate session and log password change
+        if ($passwordChanged) {
+            $request->session()->regenerate();
+            
+            Log::create([
+                'user_id' => $user->user_id,
+                'action' => 'Changed own password',
+                'date_time' => now(),
+            ]);
+        }
 
         return redirect()->route('profile.show')->with('success', 'Profile updated successfully!');
     }

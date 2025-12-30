@@ -58,7 +58,7 @@
             <div class="pt-14 px-6 pb-6">
                 <div class="mb-6">
                     <h2 class="text-xl font-bold text-slate-900 dark:text-white">{{ $user->full_name }}</h2>
-                    <p class="text-slate-500 dark:text-slate-400 text-sm">@{{ $user->username }} • {{ ucfirst($user->role) }}</p>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">{{ ucfirst($user->role) }}</p>
                 </div>
 
                 <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-5">

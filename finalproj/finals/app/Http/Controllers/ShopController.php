@@ -23,18 +23,21 @@ class ShopController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'customer_name' => 'required|string|max:255',
+            'customer_name' => 'required|string|max:255|regex:/^[\pL\s\-]+$/u',
             'payment_method' => 'required|string|in:Cash,Credit Card,Gcash',
             'products' => 'required|array|min:1',
-            'products.*.id' => 'required|exists:products,product_id',
-            'products.*.quantity' => 'required|integer|min:1',
+            'products.*.id' => 'required|integer|exists:products,product_id',
+            'products.*.quantity' => 'required|integer|min:1|max:1000',
         ]);
 
         try {
             $sale = DB::transaction(function () use ($request) {
+                // Sanitize customer name
+                $customerName = strip_tags(trim($request->customer_name));
+                
                 // 1. Create or find customer by name
                 $customer = Customer::firstOrCreate(
-                    ['customer_name' => $request->customer_name],
+                    ['customer_name' => $customerName],
                     ['contact_information' => '', 'address' => '']
                 );
 
