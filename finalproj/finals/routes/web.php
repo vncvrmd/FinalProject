@@ -81,9 +81,10 @@ Route::prefix('customer-portal')->name('customer.')->middleware('auth:customer')
     Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 });
 
+
 use Illuminate\Support\Facades\Artisan;
 
 Route::get('/migrate-db', function() {
     Artisan::call('migrate --force');
-    return '<h2>Database Migrated Successfully!</h2>';
+    return '<h1>Database Migrated Successfully!</h1>';
 });
