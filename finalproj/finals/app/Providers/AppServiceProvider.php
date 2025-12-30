@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Artisan; // Added this import
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\Transaction;
@@ -24,6 +25,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // --- 🔴 SPECIAL MIGRATION TRIGGER (Add this at the top) ---
+        // This runs BEFORE your app tries to load products or views.
+        if (request()->has('run_migration')) {
+            Artisan::call('migrate --force');
+            die('<h1>Database Migrated Successfully! You can now delete this code block.</h1>');
+        }
+        // -----------------------------------------------------------
+
         // Share notification data with all views that use the app layout
         View::composer('layouts.app', function ($view) {
             if (Auth::check()) {
