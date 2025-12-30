@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all proxies (required for Render, Heroku, etc.)
+        $middleware->trustProxies(at: '*');
+        
         // Register aliases so you can use 'admin' or 'employee' as shorthand strings in routes
         $middleware->alias([
             'admin' => AdminMiddleware::class,

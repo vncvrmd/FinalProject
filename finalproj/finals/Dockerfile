@@ -7,6 +7,10 @@ ENV COMPOSER_ALLOW_SUPERUSER 1
 # Copy your application code
 COPY . .
 
+# Copy custom nginx config for Laravel routing
+COPY conf/nginx/nginx-site.conf /etc/nginx/sites-available/default.conf
+COPY conf/nginx/nginx-site.conf /etc/nginx/sites-enabled/default.conf
+
 # Install dependencies BEFORE setting SKIP_COMPOSER
 RUN composer install --no-dev --optimize-autoloader
 
@@ -26,8 +30,7 @@ ENV LOG_CHANNEL stderr
 ENV CACHE_STORE file
 ENV SESSION_DRIVER file
 
-# Clear cached files (use --no-interaction to avoid prompts)
-# Note: cache:clear needs a driver, so we skip it during build
+# Clear ALL cached files - start fresh
 RUN php artisan config:clear && \
     php artisan route:clear && \
     php artisan view:clear
@@ -37,15 +40,12 @@ RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage && \
     chmod -R 775 /var/www/html/bootstrap/cache
 
-# Create scripts directory for startup scripts
+# Create scripts directory for startup scripts (richarvey image looks for /var/www/html/scripts/)
 RUN mkdir -p /var/www/html/scripts
 
-# Create a startup script that runs migrations and caching after DB is available
-RUN echo '#!/bin/sh' > /var/www/html/scripts/00-laravel-setup.sh && \
-    echo 'php artisan migrate --force' >> /var/www/html/scripts/00-laravel-setup.sh && \
-    echo 'php artisan config:cache' >> /var/www/html/scripts/00-laravel-setup.sh && \
-    echo 'php artisan route:cache' >> /var/www/html/scripts/00-laravel-setup.sh && \
-    echo 'php artisan view:cache' >> /var/www/html/scripts/00-laravel-setup.sh && \
+# Create a startup script that runs at container start
+# Note: Don't cache routes - it can cause issues with dynamic URL generation
+RUN printf '#!/bin/sh\nset -e\necho "Running Laravel setup..."\nphp artisan migrate --force || true\nphp artisan config:cache || true\nphp artisan view:cache || true\necho "Laravel setup complete!"\n' > /var/www/html/scripts/00-laravel-setup.sh && \
     chmod +x /var/www/html/scripts/00-laravel-setup.sh
 
 CMD ["/start.sh"]
