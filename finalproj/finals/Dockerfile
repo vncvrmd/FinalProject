@@ -35,6 +35,9 @@ RUN php artisan config:clear && \
     php artisan route:clear && \
     php artisan view:clear
 
+# Create storage symlink for public file access
+RUN php artisan storage:link || true
+
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage && \
