@@ -24,3 +24,5 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html
+
+CMD ["/bin/sh", "-c", "php artisan migrate --force && /start.sh"]
