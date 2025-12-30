@@ -22,15 +22,30 @@ ENV APP_ENV production
 ENV APP_DEBUG false
 ENV LOG_CHANNEL stderr
 
-# Clear and cache config for production
+# Set cache/session to file during build (no database available yet)
+ENV CACHE_STORE file
+ENV SESSION_DRIVER file
+
+# Clear cached files (use --no-interaction to avoid prompts)
+# Note: cache:clear needs a driver, so we skip it during build
 RUN php artisan config:clear && \
     php artisan route:clear && \
-    php artisan view:clear && \
-    php artisan cache:clear
+    php artisan view:clear
 
 # Fix permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 775 /var/www/html/storage && \
     chmod -R 775 /var/www/html/bootstrap/cache
 
-CMD ["/bin/sh", "-c", "php artisan migrate --force && php artisan config:cache && php artisan route:cache && /start.sh"]
+# Create scripts directory for startup scripts
+RUN mkdir -p /var/www/html/scripts
+
+# Create a startup script that runs migrations and caching after DB is available
+RUN echo '#!/bin/sh' > /var/www/html/scripts/00-laravel-setup.sh && \
+    echo 'php artisan migrate --force' >> /var/www/html/scripts/00-laravel-setup.sh && \
+    echo 'php artisan config:cache' >> /var/www/html/scripts/00-laravel-setup.sh && \
+    echo 'php artisan route:cache' >> /var/www/html/scripts/00-laravel-setup.sh && \
+    echo 'php artisan view:cache' >> /var/www/html/scripts/00-laravel-setup.sh && \
+    chmod +x /var/www/html/scripts/00-laravel-setup.sh
+
+CMD ["/start.sh"]
