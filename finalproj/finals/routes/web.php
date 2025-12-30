@@ -80,3 +80,10 @@ Route::prefix('customer-portal')->name('customer.')->middleware('auth:customer')
     Route::get('/receipt/{sale}', [CustomerStoreController::class, 'receipt'])->name('receipt');
     Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
 });
+
+use Illuminate\Support\Facades\Artisan;
+
+Route::get('/migrate-db', function() {
+    Artisan::call('migrate --force');
+    return '<h2>Database Migrated Successfully!</h2>';
+});
