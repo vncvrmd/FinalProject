@@ -88,3 +88,8 @@ Route::get('/migrate-db', function() {
     Artisan::call('migrate --force');
     return '<h1>Database Migrated Successfully!</h1>';
 });
+
+Route::get('/seed-db', function() {
+    Artisan::call('db:seed --force');
+    return '<h1>Database Seeded Successfully!</h1><p>Admin login: admin / password</p>';
+});

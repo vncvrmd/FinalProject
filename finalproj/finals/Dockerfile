@@ -44,8 +44,8 @@ RUN chown -R www-data:www-data /var/www/html && \
 RUN mkdir -p /var/www/html/scripts
 
 # Create a startup script that runs at container start
-# Note: Don't cache routes - it can cause issues with dynamic URL generation
-RUN printf '#!/bin/sh\nset -e\necho "Running Laravel setup..."\nphp artisan migrate --force || true\nphp artisan config:cache || true\nphp artisan view:cache || true\necho "Laravel setup complete!"\n' > /var/www/html/scripts/00-laravel-setup.sh && \
+# Runs migrations and seeds the database if users table is empty
+RUN printf '#!/bin/sh\nset -e\necho "Running Laravel setup..."\nphp artisan migrate --force || true\nphp artisan config:cache || true\nphp artisan view:cache || true\necho "Checking if seeding is needed..."\nphp artisan db:seed --force || true\necho "Laravel setup complete!"\n' > /var/www/html/scripts/00-laravel-setup.sh && \
     chmod +x /var/www/html/scripts/00-laravel-setup.sh
 
 CMD ["/start.sh"]

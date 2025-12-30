@@ -10,30 +10,33 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Only seed if no users exist (prevents duplicates on redeploy)
+        if (User::count() === 0) {
+            User::factory()->create([
+                'full_name' => 'Super Admin',
+                'email' => 'admin@example.com',
+                'username' => 'admin',
+                'role' => 'admin',
+                'password' => bcrypt('password'),
+            ]);
 
-        User::factory()->create([
-            'full_name' => 'Super Admin',
-            'email' => 'admin@example.com',
-            'username' => 'admin',
-            'role' => 'admin',
-            'password' => bcrypt('password'),
-        ]);
+            User::factory()->create([
+                'full_name' => 'Super Admin (Vince)',
+                'username' => 'spvstwu',
+                'email' => 'vincevermudo@gmail.com',
+                'role' => 'admin',
+                'password' => bcrypt('password'),
+            ]);    
 
-    User::factory()->create([
-            'full_name' => 'Super Admin (Vince)',
-            'username' => 'spvstwu',
-            'email' => 'vincevermudo@gmail.com',
-            'role' => 'admin',
-            'password' => bcrypt('password'),
-        ]);    
+            User::factory(10)->create();
 
-        User::factory(10)->create();
-
-        $this->call([
-            ProductSeeder::class,
-            CustomerSeeder::class,
-            TransactionSeeder::class,
-        ]);
-        Log::factory(20)->create();
+            $this->call([
+                ProductSeeder::class,
+                CustomerSeeder::class,
+                TransactionSeeder::class,
+            ]);
+            
+            Log::factory(20)->create();
+        }
     }
 }
