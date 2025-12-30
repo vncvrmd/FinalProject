@@ -13,6 +13,14 @@ class User extends Authenticatable
     protected $primaryKey = 'user_id';
 
     /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'user_id';
+    }
+
+    /**
      * mass assignable.
      * @var array<int, string>
      */

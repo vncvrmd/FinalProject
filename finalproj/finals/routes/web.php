@@ -85,39 +85,51 @@ Route::prefix('customer-portal')->name('customer.')->middleware('auth:customer')
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
-Route::get('/migrate-db', function() {
-    Artisan::call('migrate --force');
-    return '<h1>Database Migrated Successfully!</h1>';
-});
+// Debug routes - Protected: Only accessible to authenticated admin users
+Route::middleware(['auth'])->group(function () {
+    Route::get('/migrate-db', function() {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        Artisan::call('migrate --force');
+        return '<h1>Database Migrated Successfully!</h1><p><a href="/">Go back to Dashboard</a></p>';
+    });
 
-Route::get('/seed-db', function() {
-    Artisan::call('db:seed --force');
-    return '<h1>Database Seeded Successfully!</h1><p>Admin login: admin / password</p>';
-});
+    Route::get('/seed-db', function() {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        Artisan::call('db:seed --force');
+        return '<h1>Database Seeded Successfully!</h1><p><a href="/">Go back to Dashboard</a></p>';
+    });
 
-Route::get('/db-check', function() {
-    $output = '<h1>Database Connection Check</h1>';
-    $output .= '<p><strong>DB_CONNECTION:</strong> ' . env('DB_CONNECTION', 'not set') . '</p>';
-    $output .= '<p><strong>DB_HOST:</strong> ' . env('DB_HOST', 'not set') . '</p>';
-    $output .= '<p><strong>DB_DATABASE:</strong> ' . env('DB_DATABASE', 'not set') . '</p>';
-    $output .= '<p><strong>DATABASE_URL:</strong> ' . (env('DATABASE_URL') ? 'SET (hidden)' : 'not set') . '</p>';
+    Route::get('/db-check', function() {
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+        $output = '<h1>Database Connection Check</h1>';
+        $output .= '<p><strong>DB_CONNECTION:</strong> ' . env('DB_CONNECTION', 'not set') . '</p>';
+        $output .= '<p><strong>DB_HOST:</strong> ' . env('DB_HOST', 'not set') . '</p>';
+        $output .= '<p><strong>DB_DATABASE:</strong> ' . env('DB_DATABASE', 'not set') . '</p>';
+        $output .= '<p><strong>DATABASE_URL:</strong> ' . (env('DATABASE_URL') ? 'SET (hidden)' : 'not set') . '</p>';
+        
+        try {
+            DB::connection()->getPdo();
+            $output .= '<p style="color:green"><strong>✓ Database connected successfully!</strong></p>';
+            $output .= '<p><strong>Database name:</strong> ' . DB::connection()->getDatabaseName() . '</p>';
+            
+            // Check if users table exists
+            $tables = DB::select('SHOW TABLES');
+            $output .= '<p><strong>Tables:</strong> ' . count($tables) . ' found</p>';
+            
+            // Count users
+            $userCount = DB::table('users')->count();
+            $output .= '<p><strong>Users in database:</strong> ' . $userCount . '</p>';
+            
+        } catch (\Exception $e) {
+            $output .= '<p style="color:red"><strong>✗ Database connection failed:</strong> ' . $e->getMessage() . '</p>';
+        }
     
-    try {
-        DB::connection()->getPdo();
-        $output .= '<p style="color:green"><strong>✓ Database connected successfully!</strong></p>';
-        $output .= '<p><strong>Database name:</strong> ' . DB::connection()->getDatabaseName() . '</p>';
-        
-        // Check if users table exists
-        $tables = DB::select('SHOW TABLES');
-        $output .= '<p><strong>Tables:</strong> ' . count($tables) . ' found</p>';
-        
-        // Count users
-        $userCount = DB::table('users')->count();
-        $output .= '<p><strong>Users in database:</strong> ' . $userCount . '</p>';
-        
-    } catch (\Exception $e) {
-        $output .= '<p style="color:red"><strong>✗ Database connection failed:</strong> ' . $e->getMessage() . '</p>';
-    }
-    
-    return $output;
+        return $output;
+    });
 });

@@ -712,47 +712,49 @@
             }
         }
 
-        // Global Confirm Modal
-        window.confirmModal = {
-            show: false,
-            title: '',
-            message: '',
-            confirmText: 'Confirm',
-            confirmClass: 'bg-red-600 hover:bg-red-700',
-            onConfirm: null,
-            formToSubmit: null,
-            
-            open(options) {
-                this.title = options.title || 'Confirm Action';
-                this.message = options.message || 'Are you sure you want to proceed?';
-                this.confirmText = options.confirmText || 'Confirm';
-                this.confirmClass = options.confirmClass || 'bg-red-600 hover:bg-red-700';
-                this.onConfirm = options.onConfirm || null;
-                this.formToSubmit = options.form || null;
-                this.show = true;
-            },
-            
-            confirm() {
-                if (this.formToSubmit) {
-                    this.formToSubmit.submit();
-                } else if (this.onConfirm) {
-                    this.onConfirm();
+        // Global Confirm Modal - Register as Alpine store immediately
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('confirmModal', {
+                show: false,
+                title: '',
+                message: '',
+                confirmText: 'Confirm',
+                confirmClass: 'bg-red-600 hover:bg-red-700',
+                onConfirm: null,
+                formToSubmit: null,
+                
+                open(options) {
+                    this.title = options.title || 'Confirm Action';
+                    this.message = options.message || 'Are you sure you want to proceed?';
+                    this.confirmText = options.confirmText || 'Confirm';
+                    this.confirmClass = options.confirmClass || 'bg-red-600 hover:bg-red-700';
+                    this.onConfirm = options.onConfirm || null;
+                    this.formToSubmit = options.form || null;
+                    this.show = true;
+                },
+                
+                confirm() {
+                    if (this.formToSubmit) {
+                        this.formToSubmit.submit();
+                    } else if (this.onConfirm) {
+                        this.onConfirm();
+                    }
+                    this.close();
+                },
+                
+                close() {
+                    this.show = false;
+                    this.onConfirm = null;
+                    this.formToSubmit = null;
                 }
-                this.close();
-            },
-            
-            close() {
-                this.show = false;
-                this.onConfirm = null;
-                this.formToSubmit = null;
-            }
-        };
+            });
+        });
 
         // Helper function for delete confirmations
         function confirmDelete(form, itemName = 'this item') {
             Alpine.store('confirmModal').open({
                 title: 'Delete Confirmation',
-                message: `Are you sure you want to delete ${itemName}? This action cannot be undone.`,
+                message: `Are you sure you want to delete "${itemName}"? This action cannot be undone.`,
                 confirmText: 'Delete',
                 confirmClass: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
                 form: form
@@ -780,13 +782,12 @@
     </script>
 
     {{-- Global Confirm Modal --}}
-    <div x-data="Alpine.store('confirmModal')" 
-         x-show="show" 
+    <div x-data
+         x-show="$store.confirmModal.show" 
          x-cloak
-         class="fixed inset-0 z-[100] overflow-y-auto"
-         x-init="Alpine.store('confirmModal', window.confirmModal)">
+         class="fixed inset-0 z-[100] overflow-y-auto">
         {{-- Backdrop --}}
-        <div x-show="show"
+        <div x-show="$store.confirmModal.show"
              x-transition:enter="ease-out duration-300"
              x-transition:enter-start="opacity-0"
              x-transition:enter-end="opacity-100"
@@ -794,11 +795,11 @@
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0"
              class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
-             @click="close()"></div>
+             @click="$store.confirmModal.close()"></div>
         
         {{-- Modal --}}
         <div class="flex min-h-full items-center justify-center p-4">
-            <div x-show="show"
+            <div x-show="$store.confirmModal.show"
                  x-transition:enter="ease-out duration-300"
                  x-transition:enter-start="opacity-0 scale-95"
                  x-transition:enter-end="opacity-100 scale-100"
@@ -815,20 +816,20 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2" x-text="title"></h3>
-                    <p class="text-sm text-slate-500 dark:text-slate-400" x-text="message"></p>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2" x-text="$store.confirmModal.title"></h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400" x-text="$store.confirmModal.message"></p>
                 </div>
                 
                 {{-- Actions --}}
                 <div class="px-6 pb-6 flex gap-3">
-                    <button @click="close()" 
+                    <button @click="$store.confirmModal.close()" 
                             class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-dark-border text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors">
                         Cancel
                     </button>
-                    <button @click="confirm()" 
-                            :class="confirmClass"
+                    <button @click="$store.confirmModal.confirm()" 
+                            :class="$store.confirmModal.confirmClass"
                             class="flex-1 px-4 py-2.5 rounded-xl text-white font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2"
-                            x-text="confirmText">
+                            x-text="$store.confirmModal.confirmText">
                     </button>
                 </div>
             </div>

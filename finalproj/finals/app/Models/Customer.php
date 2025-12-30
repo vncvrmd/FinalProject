@@ -11,6 +11,14 @@ class Customer extends Authenticatable
 
     protected $primaryKey = 'customer_id';
 
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'customer_id';
+    }
+
     protected $fillable = [
         'customer_name',
         'email',

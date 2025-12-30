@@ -10,6 +10,15 @@ class Sale extends Model
     use HasFactory;
     
     protected $primaryKey = 'sales_id';
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'sales_id';
+    }
+
     protected $fillable = ['customer_id', 'total_amount', 'payment_method', 'sales_date'];
 
     // A Sale has many items (transactions)

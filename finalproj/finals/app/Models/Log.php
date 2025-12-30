@@ -11,6 +11,14 @@ class Log extends Model
 
     protected $primaryKey = 'log_id';
 
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'log_id';
+    }
+
     protected $fillable = [
         'user_id',
         'action',
