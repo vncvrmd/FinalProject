@@ -1,5 +1,26 @@
 <?php
 
+// --- 🔴 START OF MIGRATION BACKDOOR ---
+// This block runs before Laravel loads. It bypasses all routing/caching issues.
+if (isset($_GET['migrate_now'])) {
+    echo "<h1>Starting Migration (Nuclear Option)...</h1>";
+    echo "<pre style='background: #333; color: #0f0; padding: 10px;'>";
+    
+    // 1. Check where we are
+    echo "Current Directory: " . getcwd() . "\n";
+    
+    // 2. Run the migration command from the project root (one folder up)
+    // The "2>&1" part forces error messages to show on screen
+    passthru('cd .. && php artisan migrate --force 2>&1');
+    
+    echo "</pre>";
+    echo "<h1>DONE! If you see 'Migration table created' above, it worked.</h1>";
+    echo "<p><a href='/'>Go to Homepage</a></p>";
+    exit; // Stop the script here so Laravel doesn't try to load
+}
+// --- 🔴 END OF MIGRATION BACKDOOR ---
+
+
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
