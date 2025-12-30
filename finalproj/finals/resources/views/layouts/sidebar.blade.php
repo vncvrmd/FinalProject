@@ -1,11 +1,3 @@
-@php
-    if (!function_exists('is_active')) {
-        function is_active($routeName) {
-            return request()->routeIs($routeName);
-        }
-    }
-@endphp
-
 <nav class="flex-1 overflow-y-auto scrollbar-thin" :class="sidebarCollapsed ? 'px-2 py-4' : 'px-3 py-4'" x-data="{ activeSection: null }">
     {{-- Navigation Label --}}
     <p x-show="!sidebarCollapsed" 

@@ -13,3 +13,16 @@ if (!function_exists('format_peso')) {
         return '₱' . number_format($amount, 2, '.', ',');
     }
 }
+
+if (!function_exists('is_active')) {
+    /**
+     * Check if a route is currently active.
+     *
+     * @param string $routeName
+     * @return bool
+     */
+    function is_active($routeName)
+    {
+        return request()->routeIs($routeName);
+    }
+}
